@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="create">  
+    <update id="createErrorTable">
+        CREATE TABLE IF NOT EXISTS ERROR (
+            ERROR_ID INTEGER,
+            GALL_ID TEXT,
+            BOARD_ID TEXT,
+            ERR_DATE TEXT,
+            ERR_TYPE TEXT,
+            ERR_CNTNT TEXT,
+            CMPLT_YN TEXT DEFAULT 'N',
+            PRIMARY KEY("ERROR_ID" AUTOINCREMENT)
+        )    
+    </update>
+
+    <update id="createPageTable">
+        CREATE TABLE IF NOT EXISTS PAGE (
+            GALL_ID TEXT,
+            BOARD_ID TEXT,
+            WRITE_DT TEXT,
+            WRITE_USER_ID TEXT,
+            WRITE_USER_NM TEXT,
+            WRITE_USER_IP TEXT,
+            PAGE_CNTNT TEXT,
+            PRIMARY KEY (GALL_ID, BOARD_ID)
+        )
+    </update>
+
+    <update id="createPageIdx">
+        CREATE INDEX IF NOT EXISTS IDX_PAGE_01 ON PAGE (
+            GALL_ID	ASC,
+            WRITE_DT ASC
+        )    
+    </update>
+
+    <update id="createCmtTable">
+        CREATE TABLE IF NOT EXISTS CMT (
+            GALL_ID TEXT,
+            BOARD_ID TEXT,
+            CMT_ID TEXT,
+            WRITE_DT TEXT,
+            WRITE_USER_ID TEXT,
+            WRITE_USER_NM TEXT,
+            WRITE_USER_IP TEXT,
+            SELF_YN TEXT,
+            EMOTICON_YN TEXT,
+            DEL_YN TEXT,
+            CMT_CNTNT TEXT,
+            PRIMARY KEY (GALL_ID, BOARD_ID, CMT_ID)
+        )
+    </update>
+
+    <update id="createCmtIdx">
+        CREATE INDEX IF NOT EXISTS IDX_CMT_01 ON CMT (
+            GALL_ID	ASC,
+            WRITE_DT ASC
+        )
+    </update>
+
+    <update id="createCurrIdTable">
+        CREATE TABLE IF NOT EXISTS CURR_ID (
+            GALL_ID TEXT,
+            BOARD_ID TEXT,
+            PRIMARY KEY (GALL_ID)
+        )        
+    </update>
+
+    <update id="createCommCdTable">
+        CREATE TABLE IF NOT EXISTS COMM_CD (
+            DVCD TEXT,
+            CD TEXT,
+            CD_NM TEXT,
+            CD_CMT TEXT,
+            PRIMARY KEY (DVCD, CD)
+        )
+    </update>
+
+    <update id="dropErrorTable">
+        DROP TABLE ERROR
+    </update>
+
+    <update id="dropPageable">
+        DROP TABLE PAGE
+    </update>
+
+    <update id="dropCmtTable">
+        DROP TABLE CMT
+    </update>
+
+    <update id="dropCurrIdTable">
+        DROP TABLE CURR_ID
+    </update>
+    
+    <update id="dropCommCdTable">
+        DROP TABLE COMM_CD
+    </update>                
+</mapper>

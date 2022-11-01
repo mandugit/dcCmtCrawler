@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="crawler">
+  <insert id="insError">
+    INSERT INTO ERROR
+    (
+       GALL_ID
+      ,BOARD_ID
+      ,ERR_DATE
+      ,ERR_TYPE
+      ,ERR_CNTNT
+    )
+    VALUES 
+    (
+       #{GALL_ID}
+      ,#{BOARD_ID}
+      ,datetime('now')
+      ,#{ERR_TYPE}
+      ,#{ERR_CNTNT}
+    )    
+  </insert>
+
+  <select id="srchError">
+    SELECT * 
+      FROM ERROR
+    WHERE GALL_ID = #{GALL_ID}
+      AND CMPLT_YN = #{CMPLT_YN}  
+  </select>
+
+  <update id="updErrorCmpltYn">
+    UPDATE ERROR
+       SET CMPLT_YN = #{CMPLT_YN}
+     WHERE ERROR_ID = #{ERROR_ID}  
+  </update>
+
+  <select id="getCurrId">
+    SELECT BOARD_ID 
+      FROM CURR_ID 
+     WHERE GALL_ID = #{GALL_ID}    
+  </select>
+
+  <update id="mrgCurrId">
+    INSERT OR REPLACE INTO 
+    CURR_ID
+    (
+       GALL_ID
+      ,BOARD_ID
+    )
+    VALUES(
+       #{GALL_ID}
+      ,#{BOARD_ID}
+    )  
+  </update>
+
+  <delete id="delCurrId">
+    DELETE FROM CURR_ID 
+     WHERE GALL_ID = #{GALL_ID}
+  </delete>
+
+  <insert id="insPage">
+    NSERT INTO PAGE
+    (
+       GALL_ID
+      ,BOARD_ID
+      ,WRITE_DT
+      ,WRITE_USER_ID
+      ,WRITE_USER_NM
+      ,WRITE_USER_IP
+      ,PAGE_CNTNT
+    )
+    VALUES
+    (
+       #{GALL_ID}
+      ,#{BOARD_ID}
+      ,#{WRITE_DT}
+      ,#{WRITE_USER_ID}
+      ,#{WRITE_USER_NM}
+      ,#{WRITE_USER_IP}
+      ,#{PAGE_CNTNT}
+    )    
+  </insert>
+
+  <update id="mrgPage">
+    INSERT OR REPLACE INTO PAGE
+    (
+       GALL_ID
+      ,BOARD_ID
+      ,WRITE_DT
+      ,WRITE_USER_ID
+      ,WRITE_USER_NM
+      ,WRITE_USER_IP
+      ,PAGE_CNTNT
+    )
+    VALUES
+    (
+       #{GALL_ID}
+      ,#{BOARD_ID}
+      ,#{WRITE_DT}
+      ,#{WRITE_USER_ID}
+      ,#{WRITE_USER_NM}
+      ,#{WRITE_USER_IP}
+      ,#{PAGE_CNTNT}
+    )
+  </update>
+
+  <delete id="delPage">
+    DELETE FROM PAGE 
+     WHERE GALL_ID = #{GALL_ID}
+       AND BOARD_ID = #{BOARD_ID}  
+  </delete>
+
+  <insert id="insCmt">
+    INSERT INTO CMT
+    (
+       GALL_ID
+      ,BOARD_ID
+      ,CMT_ID
+      ,WRITE_DT
+      ,WRITE_USER_ID
+      ,WRITE_USER_NM
+      ,WRITE_USER_IP
+      ,SELF_YN
+      ,EMOTICON_YN
+      ,DEL_YN
+      ,CMT_CNTNT
+    )
+    VALUES
+    (
+       #{GALL_ID}
+      ,#{BOARD_ID}
+      ,#{CMT_ID}
+      ,#{WRITE_DT}
+      ,#{WRITE_USER_ID}
+      ,#{WRITE_USER_NM}
+      ,#{WRITE_USER_IP}
+      ,#{SELF_YN}
+      ,#{EMOTICON_YN}
+      ,#{DEL_YN}
+      ,#{CMT_CNTNT}
+    )
+  </insert>
+
+  <update id="mrgCmt">
+    INSERT OR REPLACE INTO CMT
+    (
+       GALL_ID
+      ,BOARD_ID
+      ,CMT_ID
+      ,WRITE_DT
+      ,WRITE_USER_ID
+      ,WRITE_USER_NM
+      ,WRITE_USER_IP
+      ,SELF_YN
+      ,EMOTICON_YN
+      ,DEL_YN
+      ,CMT_CNTNT
+    )
+    VALUES
+    (
+       #{GALL_ID}
+      ,#{BOARD_ID}
+      ,#{CMT_ID}
+      ,#{WRITE_DT}
+      ,#{WRITE_USER_ID}
+      ,#{WRITE_USER_NM}
+      ,#{WRITE_USER_IP}
+      ,#{SELF_YN}
+      ,#{EMOTICON_YN}
+      ,#{DEL_YN}
+      ,#{CMT_CNTNT}
+    )
+  </update>
+
+  <delete id="delCmt">
+    DELETE FROM CMT 
+    WHERE GALL_ID = #{GALL_ID}
+      AND BOARD_ID = #{BOARD_ID}
+      AND CMT_ID = #{CMT_ID}
+  </delete>
+
+  <delete id="delCmtAll">
+    DELETE FROM CMT 
+     WHERE GALL_ID = #{GALL_ID}
+       AND BOARD_ID = #{BOARD_ID} 
+  </delete>
+</mapper>

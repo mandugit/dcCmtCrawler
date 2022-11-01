@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="statistics">
+    <select id="srchBoardRank">
+    </select>
+    
+    <!-- 댓글랭킹 -->
+    <select id="srchCmtRank">
+    <![CDATA[
+        SELECT 
+             RANK
+            ,WRITE_USER_NM
+            ,TOT
+            ,CNT
+            ,RATE
+        FROM
+        (
+            SELECT  
+                CASE WHEN A.WRITE_USER_ID = ''
+                    THEN coalesce(A.WRITE_USER_NM, '')
+                    ELSE coalesce(A.WRITE_USER_NM, '') || '(' || coalesce(A.WRITE_USER_ID, '') || ')'
+                END AS WRITE_USER_NM
+                ,SUM(1) AS CNT
+                ,B.TOT
+                ,CAST(round((SUM(1) + 0.00) / (B.TOT + 0.00) * 100, 3) AS TEXT) || '%' AS RATE
+                ,RANK() OVER(ORDER BY SUM(1) DESC) AS "RANK"
+            FROM
+            (
+                SELECT  
+                    CASE WHEN WRITE_USER_NM = 'ㅇㅇ'
+                         THEN '' 
+                         ELSE coalesce(WRITE_USER_ID, WRITE_USER_IP)
+                         END AS WRITE_USER_ID
+                    ,WRITE_USER_NM
+                FROM CMT
+                WHERE GALL_ID = #{gallId}
+                  AND WRITE_DT between #{startDate} AND #{endDate}
+                  AND del_yn = 'N'
+            ) A
+            CROSS JOIN
+            (
+                SELECT SUM(1) AS TOT
+                  FROM CMT
+                 WHERE GALL_ID = #{gallId}
+                   AND WRITE_DT between #{startDate} AND #{endDate}
+                   AND del_yn = 'N'
+            ) B
+            GROUP BY A.WRITE_USER_ID, A.WRITE_USER_NM
+        )
+        WHERE RANK <= ${limitCnt}
+    ]]>
+    </select>
+
+    <!-- 댓글 많이달린 랭킹 -->
+    <select id="srchCmtBoardRplyRank">
+    <![CDATA[
+        SELECT *
+        FROM
+        (
+            SELECT 
+                A.WRITE_USER_NM || '(' || A.WRITE_USER_ID || ')' AS WRITE_USER_NM
+                ,A.CNT
+                ,B.TOT
+                ,CAST(round((A.CNT + 0.00) / (B.TOT + 0.00) * 100, 3) AS TEXT) || '%' AS RATE
+                ,RANK() OVER(ORDER BY A.CNT DESC) AS "RANK"
+            FROM
+            (
+                SELECT  A.WRITE_USER_ID
+                    ,A.WRITE_USER_NM
+                    ,SUM(1) AS CNT
+                FROM 
+                PAGE A
+                LEFT OUTER JOIN
+                CMT B
+                ON (A.GALL_ID = B.GALL_ID AND A.BOARD_ID = B.BOARD_ID)
+                WHERE B.GALL_ID = #{gallId}
+                  AND B.WRITE_DT between #{startDate} AND #{endDate}
+                  AND A.WRITE_USER_ID IS NOT NULL
+                  AND B.DEL_YN = 'N'
+                  AND B.SELF_YN = 'N'
+                  GROUP BY A.WRITE_USER_ID, A.WRITE_USER_NM			
+            ) A
+            CROSS JOIN
+            (
+                SELECT SUM(1) AS TOT
+                FROM PAGE A
+                LEFT OUTER JOIN 
+                CMT B
+                ON (A.GALL_ID = B.GALL_ID AND A.BOARD_ID = B.BOARD_ID)
+                WHERE B.GALL_ID = #{gallId}
+                  AND B.WRITE_DT between #{startDate} AND #{endDate}
+                  AND A.WRITE_USER_ID IS NOT NULL
+                  AND B.DEL_YN = 'N'
+                  AND B.SELF_YN = 'N'
+            ) B
+        )
+        WHERE RANK <= ${limitCnt}
+    ]]>
+    </select>
+
+    <!-- 디시콘 많이 사용한 랭킹 -->
+    <select id="srchCmtImoticonRank">
+    <![CDATA[
+        SELECT *
+        FROM
+        (
+            SELECT
+                 A.WRITE_USER_NM || '(' || A.WRITE_USER_ID || ')' AS WRITE_USER_NM
+                ,A.CNT
+                ,B.TOT
+                ,CAST(round((A.CNT + 0.00) / (B.TOT + 0.00) * 100, 3) AS TEXT) || '%' AS RATE
+                ,RANK() OVER(ORDER BY A.CNT DESC) AS "RANK"
+            FROM
+            (
+                select 
+                     WRITE_USER_ID
+                    ,WRITE_USER_NM
+                    ,SUM(1) AS CNT
+                from CMT
+                where GALL_ID = #{gallId}
+                  AND WRITE_DT BETWEEN #{startDate} AND #{endDate}
+                  AND del_yn = 'N'
+                  AND EMOTICON_YN = 'Y'
+                  AND WRITE_USER_ID is not NULL
+                  group by WRITE_USER_ID, WRITE_USER_NM
+            ) A
+            CROSS JOIN
+            (
+                SELECT SUM(1) AS TOT
+                FROM CMT
+                WHERE GALL_ID = #{gallId}
+                  AND WRITE_DT BETWEEN #{startDate} AND #{endDate}
+                  AND del_yn = 'N'
+                  AND EMOTICON_YN = 'Y'
+                  AND WRITE_USER_ID IS NOT NULL
+            ) B
+        )
+        WHERE RANK <= ${limitCnt}  
+    ]]>
+    </select>
+
+    <!-- xx별 상위 x위 통계 -->
+    <select id="srchCmtRankTypeList">
+    <![CDATA[
+        SELECT 
+             RANK
+            ,${type}
+            ,WRITE_USER_NM
+            ,CNT
+        FROM
+        (
+            SELECT
+                (SELECT CD_NM FROM COMM_CD WHERE DVCD = #{type} AND CD = T.${type}) AS "${type}"
+                ,CASE WHEN WRITE_USER_ID = ''
+                    THEN coalesce(WRITE_USER_NM, '')
+                    ELSE coalesce(WRITE_USER_NM, '') || '(' || coalesce(WRITE_USER_ID, '') || ')'
+                END AS WRITE_USER_NM
+                ,CNT
+                ,RANK() OVER(PARTITION BY ${type} ORDER BY CNT DESC) AS "RANK"
+            FROM
+            (
+                SELECT ${type}, WRITE_USER_ID, WRITE_USER_NM, SUM(1) AS CNT
+                FROM
+                (
+                        SELECT strftime(#{format}, WRITE_DT) AS "${type}"
+                            ,CASE WHEN WRITE_USER_NM = 'ㅇㅇ'
+                                    THEN ''
+                                    ELSE coalesce(WRITE_USER_ID, WRITE_USER_IP)
+                                    END
+                                AS WRITE_USER_ID
+                            ,WRITE_USER_NM
+                        FROM CMT  
+                       WHERE GALL_ID = #{gallId}
+                         AND WRITE_DT BETWEEN #{startDate} AND #{endDate}
+                         AND DEL_YN = 'N'
+                )
+                GROUP BY ${type}, WRITE_USER_ID, WRITE_USER_NM
+            ) T
+        ) 
+        WHERE RANK <= ${limitCnt}
+    ]]>
+    </select>
+
+    <!-- xx별 통계 -->
+    <select id="srchCmtRankStts">
+    <![CDATA[
+        SELECT
+             (SELECT CD_NM FROM COMM_CD WHERE DVCD = #{type} AND CD = T.${type}) AS "${type}"
+            ,CNT
+        FROM
+        (
+            SELECT strftime(#{format}, WRITE_DT) AS ${type}
+                  ,SUM(1) AS CNT
+             FROM CMT
+            WHERE GALL_ID = #{gallId}
+              AND WRITE_DT BETWEEN #{startDate} AND #{endDate}
+              AND DEL_YN = 'N'
+            GROUP BY strftime(#{format}, WRITE_DT) 
+            ORDER BY 1      
+        ) T  
+    ]]>  
+    </select>
+</mapper>

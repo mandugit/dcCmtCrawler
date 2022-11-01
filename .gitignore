@@ -1,3 +1,8 @@
+# project ignore
+.vscode/
+result/
+src/db/comment.db
+
 # Logs
 logs
 *.log
