@@ -450,7 +450,7 @@ class CrawlerModule {
         let startId = (await this.#crawlerService.getCurrId({'GALL_ID': this.#gallId})).BOARD_ID;
         let endId = await this.#getMaxPageId();
 
-        startId = Number(startId) - 200;
+        startId = Number(startId);
         endId = Number(endId);
 
         for(let i=startId; i<=endId; i++) {
@@ -489,6 +489,10 @@ class CrawlerModule {
                 }
             }
 
+            //마지막 게시글ID UPDATE
+            await this.#crawlerService.mrgCurrId({'GALL_ID': this.#gallId, 'BOARD_ID' : this.#currId});
+
+            //연속 request 방지를 위한 delay 설정
             await util.delay(CONST.DELAY_NUM);
         }
         
@@ -520,8 +524,7 @@ class CrawlerModule {
             await util.delay(CONST.DELAY_NUM);            
         }
 
-        //마지막 게시글ID UPDATE
-        await this.#crawlerService.mrgCurrId({'GALL_ID': this.#gallId, 'BOARD_ID' : endId});
+        //DB connection 닫기
         await this.#DBConn.close();
 
         console.log('CrawlerModule run end!!!');
