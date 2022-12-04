@@ -19,6 +19,7 @@ class CrawlerModule {
     #debug = false;
     #currId = 0;
     #stopFlag = false;
+    #startOffset = 0;
 
     constructor(id, gubun) {
         this.#gallId = id;
@@ -39,6 +40,10 @@ class CrawlerModule {
 
     setDebug(debug) {
         this.#debug = debug;
+    }
+
+    setStartOffset(startOffset) {
+        this.#startOffset = startOffset;
     }
 
     async setGallCurrId(curId) {
@@ -450,7 +455,17 @@ class CrawlerModule {
         let startId = (await this.#crawlerService.getCurrId({'GALL_ID': this.#gallId})).BOARD_ID;
         let endId = await this.#getMaxPageId();
 
+        if(this.#debug) {
+            console.log(`startId >>>> ${startId}`);
+            console.log(`endId >>>> ${endId}`);
+            console.log(`startOffset >>>> ${this.#startOffset}`);
+        }
+
         startId = Number(startId);
+        if(startId - this.#startOffset > 0) {
+            startId -= this.#startOffset;
+        }
+
         endId = Number(endId);
 
         for(let i=startId; i<=endId; i++) {
